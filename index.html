@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vue Todo App</title>
+
+  <style type="text/css">
+    .flexContainer {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .flexContainer li.closed {
+      order: 1;
+      text-decoration: line-through;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="app">
+    <form v-on:submit.prevent="createTodo">
+      <input type="text" v-model="newTodo.description" placeholder="Todo Description">
+      <input type="submit" value="Create Todo">
+    </form>
+
+    <ul class="flexContainer">
+      <li v-for="todo in todos" :class="todo.status">
+        <span>{{ todo.description }} - {{ todo.status }}</span>
+        <button v-on:click="updateTodo(todo)">&#10003;</button>
+        <button v-on:click="deleteTodo(todo)">&times;</button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Vue -->
+  <script src="https://unpkg.com/vue"></script>
+  <!-- Firebase -->
+  <script src="https://gstatic.com/firebasejs/4.0.0/firebase.js"></script>
+  <!-- VueFire -->
+  <script src="https://unpkg.com/vuefire/dist/vuefire.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: /* Firebase API Key */,
+      authDomain: /* Firebase Auth Domain */,
+      databaseURL: /* Firebase Database URL */
+    };
+    firebase.initializeApp(config);
+
+    // VueFire binding pointing to todos data
+    var todosRef = firebase.database().ref('todos');
+
+    new Vue({
+      el: "#app",
+
+      data: {
+        newTodo: {
+          description: '',
+          status: 'open'
+        }
+      },
+
+      // VueFire binding getting todos
+      firebase: {
+        todos: todosRef
+      },
+
+      methods: {
+        createTodo: function() {
+          todosRef.push(this.newTodo);
+          this.newTodo.description = '';
+        },
+
+        updateTodo: function(todo) {
+          todosRef.child(todo['.key']).update({ status: 'closed' });
+        },
+
+        deleteTodo: function(todo) {
+          todosRef.child(todo['.key']).remove();
+        },
+      }
+    });
+  </script>
+</body>
+</html>
